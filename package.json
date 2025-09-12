@@ -1,0 +1,29 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AanandShubham/Backend_Attendance_Ease.git"
+  },
+  "author": "Harsh Aanand",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AanandShubham/Backend_Attendance_Ease/issues"
+  },
+  "homepage": "https://github.com/AanandShubham/Backend_Attendance_Ease#readme",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dot-env": "^0.0.1",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.18.1"
+  }
+}
