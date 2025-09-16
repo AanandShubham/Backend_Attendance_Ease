@@ -2,10 +2,14 @@ import mongoose from "mongoose"
 
 const connectDatabase = async () => {
     try {
-        await mongoose.connect("mongodb+srv://anandsinghhum_db_user:VDlCWqQGw8vf1WUm@cluster0.n03emlm.mongodb.net/Attendance-Ease-Db?retryWrites=true&w=majority&appName=Cluster0")
-        console.log("Connected to MongoDB")
+        await mongoose.connect(process.env.MONGO_URI)
+        // console.log("------------------------------")
+        console.log("     Connected to Database")
+        console.log("------------------------------")
     } catch (error) {
-        console.log("Error :-",error)
+        console.log("-----------------------------------------")
+        console.log("Error in connecting mongodb :-", error)
+        console.log("-----------------------------------------")
     }
 }
 
