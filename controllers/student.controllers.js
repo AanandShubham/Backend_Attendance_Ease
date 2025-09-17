@@ -118,7 +118,7 @@ export const deleteStudent = async (req, res) => {
         //     $pull:{
         //         classList:{classId:classId}
         //     }
-        // },{new:true})
+        // },{new:true,session})
 
         const student = await Student.findById(id).session(session)
 
@@ -138,14 +138,14 @@ export const deleteStudent = async (req, res) => {
         )
 
         await student.save({ session })
-        if(student.classList.length ===0){
-            await student.deleteOne().session(session)
+        if (student.classList.length === 0) {
+            await student.deleteOne({ session })
         }
         await classes.save({ session })
 
         await session.commitTransaction()
 
-        res.status(200).json({ message: "Student removed Successfully", classes})
+        res.status(200).json({ message: "Student removed Successfully", classes })
 
     } catch (error) {
         await session.abortTransaction()
