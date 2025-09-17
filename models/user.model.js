@@ -1,7 +1,7 @@
 import mongoose from "mongoose"
 
 const userSchema = new mongoose.Schema({
-    userName:{
+    username:{
         type:String,
         required:true,
         unique:true
@@ -15,6 +15,17 @@ const userSchema = new mongoose.Schema({
         required:true,
         minlength:6
     },
+    securityKey:{
+        type:String,
+        required:true
+    },
+    classes:[
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Class",
+            default:[]
+        }
+    ]
 
 
 },{timestamps:true})
