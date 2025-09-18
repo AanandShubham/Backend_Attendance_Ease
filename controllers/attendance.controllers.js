@@ -38,7 +38,6 @@ export const addAttendance = async (req, res) => {
     }
 }
 
-
 export const deleteAttendance = async (req, res) => {
     try {
 

@@ -3,6 +3,7 @@ import express from "express"
 import authRoute from './routes/auth.routes.js'
 import classRoute from './routes/classes.routes.js'
 import studentRoute from './routes/student.routes.js'
+import attendanceRoute from './routes/attendance.routes.js'
 import connectDatabase from './db/ConnectDatabase.js'
 import dotenv from 'dotenv'
 
@@ -16,7 +17,7 @@ app.use(cookieParser())
 app.use("/api/auth",authRoute)
 app.use("/api/class",classRoute)
 app.use("/api/student",studentRoute)
-app.use("/api/attendance",(req,res)=>{res.send("Attendance Route")})
+app.use("/api/attendance",attendanceRoute)
 
 app.get("/", (req, res) => {
     res.send("Hello Ashish")
