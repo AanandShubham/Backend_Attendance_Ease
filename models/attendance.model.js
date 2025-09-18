@@ -23,7 +23,7 @@ const attendanceSchema = new mongoose.Schema({
             ref:"Student"
         }
     ]
-})
+},{timestamps:true})
 
 const Attendance = mongoose.model("Attendance",attendanceSchema)
 
