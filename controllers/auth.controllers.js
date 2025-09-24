@@ -1,10 +1,13 @@
 import User from "../models/user.model.js"
 import bcrypt from 'bcryptjs'
 import { generateToken } from "../utils/generateToken.js"
+import uploadToCloudinary from "../utils/uploadToCloudinary.js"
 
 export const signup = async (req, res) => {
     try {
         const { username, fullname, password, confirmPassword, securityKey } = req.body
+
+
         console.log("signup request Got : details : ", req.body)
         if (password !== confirmPassword) {
             return res.status(400).json({ error: "password and confirm password doesnot match" })
@@ -16,6 +19,9 @@ export const signup = async (req, res) => {
             return res.status(409).json({ message: "User Already Available" })
         }
 
+        // uploading file to cloudinary 
+        const profile = await uploadToCloudinary(req.file.path)  
+
         // generating hashed password 
         const salt = await bcrypt.genSalt(10)
         const hashedPassword = await bcrypt.hash(password, salt)
@@ -25,7 +31,8 @@ export const signup = async (req, res) => {
             username,
             fullname,
             password: hashedPassword,
-            securityKey
+            securityKey,
+            profile
         })
 
         if (newUser) {

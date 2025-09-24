@@ -25,8 +25,11 @@ const userSchema = new mongoose.Schema({
             ref:"Class",
             default:[]
         }
-    ]
-
+    ],
+    profile:{
+        type:String,
+        default:""
+    }
 
 },{timestamps:true})
 
