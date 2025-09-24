@@ -12,7 +12,10 @@ const uploadToCloudinary = async (filePath) => {
     try {
         if (!filePath) return null
 
-        const uploadResult = await cloudinary.uploader.upload(filePath)
+        const uploadResult = await cloudinary.uploader.upload(filePath,{
+            resource_type: "auto",
+            folder: "AttendanceEase"
+        })
 
         const imageUrl = uploadResult?.secure_url
 
