@@ -17,7 +17,7 @@ const uploadToCloudinary = async (filePath) => {
             folder: "AttendanceEase"
         })
 
-        const imageUrl = uploadResult?.secure_url
+        const imageUrl = {secure_url: uploadResult?.secure_url,public_id:uploadResult?.public_id}
 
         fs.unlinkSync(filePath)
 

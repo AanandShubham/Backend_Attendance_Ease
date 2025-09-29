@@ -1,38 +1,44 @@
 import mongoose from "mongoose"
 
 const userSchema = new mongoose.Schema({
-    username:{
-        type:String,
-        required:true,
-        unique:true
+    username: {
+        type: String,
+        required: true,
+        unique: true
     },
-    fullname:{
-        type:String,
-        required:true
+    fullname: {
+        type: String,
+        required: true
     },
-    password:{
-        type:String,
-        required:true,
-        minlength:6
+    password: {
+        type: String,
+        required: true,
+        minlength: 6
     },
-    securityKey:{
-        type:String,
-        required:true
+    securityKey: {
+        type: String,
+        required: true
     },
-    classes:[
+    classes: [
         {
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"Class",
-            default:[]
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Class",
+            default: []
         }
     ],
-    profile:{
-        type:String,
-        default:""
+    profile: {
+        secure_url: {
+            type: String,
+            default: ""
+        },
+        public_id: {
+            type: String,
+            default: ""
+        }
     }
 
-},{timestamps:true})
+}, { timestamps: true })
 
-const User = mongoose.model("User",userSchema)
+const User = mongoose.model("User", userSchema)
 
 export default User
