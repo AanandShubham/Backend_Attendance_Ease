@@ -11,8 +11,6 @@ export const addStudent = async (req, res) => {
 
         const classes = await Class.findById(classId).session(session)
 
-
-
         if (!classes) {
             await session.abortTransaction()
             // session.endSession()
