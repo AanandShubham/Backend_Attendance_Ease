@@ -64,9 +64,11 @@ export const signup = async (req, res) => {
 export const login = async (req, res) => {
     try {
         const { username, password } = req.body
+        console.log("Username : ",username)
+        console.log("Passoword : ",password)
 
-        const user = await User.findOne({ username })
-
+        const user = await User.findOne({ username })?.populate("classes")
+        // console.log("Classes : ",user["classes"])
         const isPasswordTrue = await bcrypt.compare(password, user?.password || "")
 
         if (!user && !isPasswordTrue) {
