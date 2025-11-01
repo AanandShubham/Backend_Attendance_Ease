@@ -7,8 +7,12 @@ export const signup = async (req, res) => {
     try {
         const { username, fullname, password, confirmPassword, securityKey } = req.body
 
-
+        console.log("---------------------------------------------------")
+        
         console.log("signup request Got : details : ", req.body)
+        console.log("Path : ",req.file.path);
+        
+        console.log("---------------------------------------------------")
         if (password !== confirmPassword) {
             return res.status(400).json({ error: "password and confirm password doesnot match" })
         }
@@ -18,6 +22,8 @@ export const signup = async (req, res) => {
         if (user) {
             return res.status(409).json({ message: "User Already Available" })
         }
+
+        
 
         // uploading file to cloudinary 
         const profile = await uploadToCloudinary(req.file.path)  
