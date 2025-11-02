@@ -64,7 +64,7 @@ export const addStudent = async (req, res) => {
     }
 }
 
-export const editStudent = async (req, res) => {
+export const updateStudent = async (req, res) => {
     try {
         const { id, newAttendance, classId } = req.body
         const classes = await Class.findById(classId)
