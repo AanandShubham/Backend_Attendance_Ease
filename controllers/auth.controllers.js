@@ -2,16 +2,17 @@ import User from "../models/user.model.js"
 import bcrypt from 'bcryptjs'
 import { generateToken } from "../utils/generateToken.js"
 import uploadToCloudinary from "../utils/uploadToCloudinary.js"
+import { error } from "console"
 
 export const signup = async (req, res) => {
     try {
         const { username, fullname, password, confirmPassword, securityKey } = req.body
 
         console.log("---------------------------------------------------")
-        
+
         console.log("signup request Got : details : ", req.body)
-        console.log("Path : ",req.file.path);
-        
+        console.log("Path : ", req.file.path);
+
         console.log("---------------------------------------------------")
         if (password !== confirmPassword) {
             return res.status(400).json({ error: "password and confirm password doesnot match" })
@@ -23,10 +24,10 @@ export const signup = async (req, res) => {
             return res.status(409).json({ message: "User Already Available" })
         }
 
-        
+
 
         // uploading file to cloudinary 
-        const profile = await uploadToCloudinary(req.file.path)  
+        const profile = await uploadToCloudinary(req.file.path)
 
         // generating hashed password 
         const salt = await bcrypt.genSalt(10)
@@ -70,8 +71,8 @@ export const signup = async (req, res) => {
 export const login = async (req, res) => {
     try {
         const { username, password } = req.body
-        console.log("Username : ",username)
-        console.log("Passoword : ",password)
+        console.log("Username : ", username)
+        console.log("Passoword : ", password)
 
         const user = await User.findOne({ username })?.populate("classes")
         // console.log("Classes : ",user["classes"])
@@ -99,19 +100,59 @@ export const login = async (req, res) => {
     }
 }
 
-export const logout = async (req,res)=>{
+export const forgot = async (req, res) => {
+
+    try {
+        const { username, securityKey, password, confirmPassword } = req.body
+
+        if (password !== confirmPassword) {
+            return res.status(400).json({ error: "Password and confirmPassword does not match !" })
+        }
+
+        const user = await User.findOne({ username })
+
+        if (!user) {
+            return res.status(400).json({ error: "Inavalid user name" })
+        }
+
+        const isSecurityKeyMathch = user.securityKey == securityKey
+
+        if (user.securityKey !== securityKey) {
+            return res.status(400).json({ error: "Invalid Security Key !" })
+        }
+
+        const salt = await bcrypt.genSalt(10)
+        const hashedPassword = await bcrypt.hash(password, salt)
+
+        user.password = hashedPassword
+
+        await user.save()
+
+        return res.status(200).json({message:"Password Updated Successfully" })
+
+
+
+    } catch (error) {
+        console.log("--------------------------------------------------")
+        console.log("Error in auth controller Forget \nErron :", error)
+        console.log("--------------------------------------------------")
+        return res.status(500).json({ error: "Internal Server Error!!" })
+    }
+}
+
+export const logout = async (req, res) => {
     try {
         res.cookie("jwt", "", {
             maxAge: 0
         })
 
-        res.status(200).json({message:"Logout Successfully !!"})
-        
+        res.status(200).json({ message: "Logout Successfully !!" })
+
     } catch (error) {
         console.log("--------------------------------------------------")
         console.log("Error in auth controller Logout \nErron :", error)
         console.log("--------------------------------------------------")
-        return res.status(500).json({ error: "Internal Server Error!!" }) 
+        return res.status(500).json({ error: "Internal Server Error!!" })
     }
 }
 
