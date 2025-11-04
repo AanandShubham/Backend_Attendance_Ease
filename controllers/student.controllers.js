@@ -2,6 +2,29 @@ import mongoose from "mongoose"
 import Class from "../models/class.model.js"
 import Student from "../models/student.model.js"
 
+
+export const getStudents = async (req, res) => {
+    try {
+        const classId = req.params.id
+
+        const existedClass = await Class.findById({ classId })
+                                        .select("-password")
+                                        .populate("students")
+
+        if (!existedClass) {
+            res.status(400).json({ error: "invalid class id !" })
+        }
+
+        return res.status(200).json({ existedClass })
+
+    } catch (error) {
+        console.log("--------------------------------------------------")
+        console.log("Error in Student controller getAllStudents \nErron :", error)
+        console.log("--------------------------------------------------")
+        return res.status(500).json({ error: "Internal Server Error!!" })
+    }
+}
+
 export const addStudent = async (req, res) => {
     const session = await mongoose.startSession()
     session.startTransaction() // starting session for atomicity
@@ -90,6 +113,7 @@ export const updateStudent = async (req, res) => {
         await student.save()
 
         return res.status(201).json({ student })
+
     } catch (error) {
         console.log("--------------------------------------------------")
         console.log("Error in Student controller AddStudent \nErron :", error)
