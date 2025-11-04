@@ -4,12 +4,19 @@ import User from '../models/user.model.js'
 export const addClass = async (req, res) => {
     try {
 
+        console.log("Request came // ")
         const { name, roomNo, totalClass, subject, timeTable } = req.body
         const user = req.user
+        console.log("data : ",req.body)
 
-        const newClass = await Class.create({
-            name, roomNo, totalClass, subject, timeTable
-        })
+        const newClass = await Class.create(
+            {
+                name,
+                roomNo,
+                totalClass,
+                subject,
+                timeTable
+            })
 
         if (!newClass) {
             return res.status(401).json({ error: "Problem in Add Class details" })
@@ -31,7 +38,7 @@ export const addClass = async (req, res) => {
 export const updateClass = async (req, res) => {
     try {
         const { id, name, roomNo, totalClass, subject, timeTable } = req.body
-        const user = req.user
+        // const user = req.user
 
         const updatedClass = await Class.findByIdAndUpdate(
             id,
