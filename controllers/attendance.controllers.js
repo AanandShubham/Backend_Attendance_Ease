@@ -1,6 +1,26 @@
 import Attendance from "../models/attendance.model.js"
 import Class from "../models/class.model.js"
 
+export const getAllAttendance = async (req, res) => {
+    try {
+        const classId = req.params.id
+
+        const existedClass = await Class.findById(classId).populate("attendance")
+
+        if (!existedClass) {
+            return res.status(400).json({ error: "Invalid Class id !!" })
+        }
+
+        return res.status(200).json({ existedClass })
+
+    } catch (error) {
+        console.log("--------------------------------------------------")
+        console.log("Error in Attendance controller get All Attendance \nError :", error)
+        console.log("--------------------------------------------------")
+        return res.status(500).json({ error: "Internal Server Error!!" })
+    }
+}
+
 export const addAttendance = async (req, res) => {
     try {
 
@@ -54,25 +74,25 @@ export const deleteAttendance = async (req, res) => {
 
         const attendance = await Attendance.findById(attendanceId)
 
-        if(!attendance){
-            return res.status(400).json({error:"Invalid Attendance id"})
+        if (!attendance) {
+            return res.status(400).json({ error: "Invalid Attendance id" })
         }
 
         const updatedClass = await Class.findById(classId)
 
-        if(!updatedClass){
-            return res.status(400).json({error:"Invalid Class id"})
+        if (!updatedClass) {
+            return res.status(400).json({ error: "Invalid Class id" })
         }
 
         await attendance.deleteOne()
 
         updatedClass.attendance = updatedClass.attendance.filter(
-            (atd)=> atd.toString() !== attendanceId.toString()
+            (atd) => atd.toString() !== attendanceId.toString()
         )
 
         await updatedClass.save()
 
-        return res.status(200).json({message:"attendance deleted",classes:updatedClass})
+        return res.status(200).json({ message: "attendance deleted", classes: updatedClass })
 
     } catch (error) {
         console.log("--------------------------------------------------")
