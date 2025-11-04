@@ -7,12 +7,10 @@ export const getStudents = async (req, res) => {
     try {
         const classId = req.params.id
 
-        const existedClass = await Class.findById({ classId })
-                                        .select("-password")
-                                        .populate("students")
+        const existedClass = await Class.findById(classId).populate("students")
 
         if (!existedClass) {
-            res.status(400).json({ error: "invalid class id !" })
+            return res.status(400).json({ error: "invalid class id !" })
         }
 
         return res.status(200).json({ existedClass })
