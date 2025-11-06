@@ -2,27 +2,6 @@ import mongoose from "mongoose"
 import Class from "../models/class.model.js"
 import Student from "../models/student.model.js"
 
-
-export const getStudents = async (req, res) => {
-    try {
-        const classId = req.params.id
-
-        const existedClass = await Class.findById(classId).populate("students")
-
-        if (!existedClass) {
-            return res.status(400).json({ error: "invalid class id !" })
-        }
-
-        return res.status(200).json({ existedClass })
-
-    } catch (error) {
-        console.log("--------------------------------------------------")
-        console.log("Error in Student controller getAllStudents \nErron :", error)
-        console.log("--------------------------------------------------")
-        return res.status(500).json({ error: "Internal Server Error!!" })
-    }
-}
-
 export const addStudent = async (req, res) => {
     const session = await mongoose.startSession()
     session.startTransaction() // starting session for atomicity
@@ -34,7 +13,6 @@ export const addStudent = async (req, res) => {
 
         if (!classes) {
             await session.abortTransaction()
-            // session.endSession()
             return res.status(400).json({ error: "invalid class id" })
         }
 
@@ -52,9 +30,15 @@ export const addStudent = async (req, res) => {
 
         } else {
 
-            student = await Student.create([
-                { tca, name, classList: [{ totalAttendance, classId }] }
-            ], { session })
+            student = await Student.create(
+                [
+                    {
+                        tca,
+                        name,
+                        classList: [{ totalAttendance, classId }]
+                    }
+
+                ], { session })
 
             student = student[0] // session returns array so we need to do this 
         }

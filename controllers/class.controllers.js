@@ -1,13 +1,57 @@
 import Class from '../models/class.model.js'
-import User from '../models/user.model.js'
+
+
+export const getDetails = async (req, res) => {
+    try {
+        const classId = req.params.id
+        const classDetails = await Class.findById(classId)
+                                        .populate("students")
+                                        .populate("attendance")
+
+        // const classDetails = await Class.findById(classId)
+        //     .populate({
+        //         path: "students",
+        //         populate: ({path:"classList._id"})
+        //     })
+        //     .populate({
+        //         path: "attendance",               // populate the attendance array
+        //         populate: {
+        //             path: "students",               // populate the students inside each attendance record
+        //             model: "Student",               // model name
+        //             select: "name tca"              // optional: select fields you want
+        //         }
+        //     })
+
+
+        if (!classDetails) {
+            return res.status(400).json({ error: "Invalid Class Id" })
+        }
+
+        // console.log("-------------------------------------------")
+        // console.log("Class Details : ", JSON.stringify(classDetails,null,2))
+        // console.log("-------------------------------------------")
+
+        return res.status(200).json(
+            {
+                attendances: classDetails.attendance,
+                students: classDetails.students
+            }
+        )
+
+    } catch (error) {
+        console.log("--------------------------------------------------")
+        console.log("Error in Class controller AddClass \nErron :", error)
+        console.log("--------------------------------------------------")
+        return res.status(500).json({ error: "Internal Server Error!!" })
+    }
+}
 
 export const addClass = async (req, res) => {
+
     try {
 
-        console.log("Request came // ")
         const { name, roomNo, totalClass, subject, timeTable } = req.body
         const user = req.user
-        console.log("data : ",req.body)
 
         const newClass = await Class.create(
             {
@@ -68,6 +112,7 @@ export const deleteClass = async (req, res) => {
 
         const { id } = req.body
         const user = req.user
+
         // Still incomplete
 
     } catch (error) {
