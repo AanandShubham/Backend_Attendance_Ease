@@ -21,7 +21,7 @@ export const addStudent = async (req, res) => {
 
         if (student) {
 
-            const isClassAlreadySelected = student.classList.some((cls) => cls.classId.toString === classId.toString)
+            const isClassAlreadySelected = student.classList.some((cls) => cls.classId.toString() === classId.toString())
 
             if (!isClassAlreadySelected) {
                 student.classList.push({ totalAttendance, classId })
@@ -44,7 +44,7 @@ export const addStudent = async (req, res) => {
         }
 
         const std_id = student._id
-        const isStudentInClassAlready = classes.students.some((std) => std.id.toString === std_id.toString)
+        const isStudentInClassAlready = classes.students.some((std) => std.id.toString() === std_id.toString())
 
         if (!isStudentInClassAlready) {
             classes.students.push(std_id)

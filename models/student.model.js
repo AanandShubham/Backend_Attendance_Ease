@@ -4,7 +4,8 @@ const studentSchema = new mongoose.Schema({
     tca: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        trim:true
     },
     name: {
         type: String,
