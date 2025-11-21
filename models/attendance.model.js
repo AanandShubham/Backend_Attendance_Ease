@@ -9,7 +9,7 @@ const attendanceSchema = new mongoose.Schema({
         type:String,
         required:true
     },
-    Subject:{
+    subject:{
         type:String,
         required:true
     },

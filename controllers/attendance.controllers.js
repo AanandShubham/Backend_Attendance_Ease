@@ -1,40 +1,75 @@
 import Attendance from "../models/attendance.model.js"
 import Class from "../models/class.model.js"
+import Student from "../models/student.model.js"
 
 export const addAttendance = async (req, res) => {
+    const session = await mongoose.startSession()
+    session.startTransaction() // starting session for atomicity
     try {
 
-        const { name, time, subject, roomNo, students, classId } = req.body
+        const { name, time, subject, roomNo, students, attendanceList, classId } = req.body
 
-        if (!students) {
-            return res.status(400).json({ error: "Error !! Students can't be empty" })
+        console.log("-----------------------------------------")
+        console.log("Addtendace Data : ", JSON.stringify(req.body, null, 2))
+        console.log("-----------------------------------------")
+
+        
+        if (!Array.isArray(students) || students.length === 0) {
+            await session.abortTransaction()
+            return res.status(400).json({ error: "Students can't be empty" })
         }
 
-        const attendance = await Attendance.create({ name, time, subject, roomNo, students })
+        const attendanceArr = await Attendance.create(
+            [{ name, time, subject, roomNo, attendanceList }],
+            { session }
+        )
+
+        const attendance = attendanceArr[0] // session returns array so we need to do this
 
         if (!attendance) {
-            return res.status(400).json({ error: "Invalid attendance Details" })
+            await session.abortTransaction()
+            return res.status(400).json({ error: "Error creating attendance" })
         }
 
-        const updatedClass = await Class.findByIdAndDelete(
+        // update class with attendance id 
+        const updatedClass = await Class.findByIdAndUpdate(
             classId,
-            {
-                $push: {
-                    attendance: attendance._id
-                }
-            }, { new: true })
+            { $push: { attendance: attendance._id } },
+            { new: true, session }
+        )
 
         if (!updatedClass) {
+            await session.abortTransaction()
             return res.status(400).json({ error: "Invalid Class id" })
         }
 
-        return res.status(201).json({ message: "attendance generated and saved", classes: updatedClass })
+        // update student with bulkwrite 
+        const bulkOps = students.map(stu => ({
+            updateOne: {
+                filter: { _id: stu._id },
+                update: { $set: stu }
+            }
+        }))
+
+        const result = await Student.bulkWrite(bulkOps, { session })
+
+        if (result.matchedCount !== students.length) {
+            await session.abortTransaction()
+            return res.status(400).json({ error: "Error updating students" })
+        }
+
+        await session.commitTransaction()
+
+        return res.status(201).json({ attendance, updatedClass })
 
     } catch (error) {
+        await session.abortTransaction()
         console.log("--------------------------------------------------")
         console.log("Error in Attendance controller Add Attendance \nError :", error)
         console.log("--------------------------------------------------")
         return res.status(500).json({ error: "Internal Server Error!!" })
+    } finally {
+        session.endSession()
     }
 }
 
