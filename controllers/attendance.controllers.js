@@ -1,6 +1,7 @@
 import Attendance from "../models/attendance.model.js"
 import Class from "../models/class.model.js"
 import Student from "../models/student.model.js"
+import mongoose from "mongoose"
 
 export const addAttendance = async (req, res) => {
     const session = await mongoose.startSession()
@@ -13,14 +14,14 @@ export const addAttendance = async (req, res) => {
         console.log("Addtendace Data : ", JSON.stringify(req.body, null, 2))
         console.log("-----------------------------------------")
 
-        
+
         if (!Array.isArray(students) || students.length === 0) {
             await session.abortTransaction()
             return res.status(400).json({ error: "Students can't be empty" })
         }
 
         const attendanceArr = await Attendance.create(
-            [{ name, time, subject, roomNo, attendanceList }],
+            [{ name, time, subject, roomNo, students:attendanceList }],
             { session }
         )
 
@@ -59,6 +60,16 @@ export const addAttendance = async (req, res) => {
         }
 
         await session.commitTransaction()
+
+        console.log("**********************************************")
+        console.log("After Adding attendance as response  : ", JSON.stringify(attendance, null, 2))
+        console.log("**********************************************")
+
+        console.log("**********************************************")
+        console.log("After adding Attendance Class Data as Response : ", JSON.stringify(updatedClass, null, 2))
+        console.log("**********************************************")
+
+
 
         return res.status(201).json({ attendance, updatedClass })
 
