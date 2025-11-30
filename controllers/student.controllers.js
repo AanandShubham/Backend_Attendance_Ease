@@ -21,6 +21,13 @@ export const addStudent = async (req, res) => {
 
         if (student) {
 
+            const flag = student.name !== name
+
+            if (flag) {
+                await session.abortTransaction()
+                return res.status(400).json({ error: "TCA already exists with different name" })
+            }
+
             const isClassAlreadySelected = student.classList.some((cls) => cls.classId.toString() === classId.toString())
 
             if (!isClassAlreadySelected) {
