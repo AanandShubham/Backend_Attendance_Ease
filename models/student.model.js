@@ -5,7 +5,8 @@ const studentSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
-        trim:true
+        trim: true,
+        set: v => v.toUpperCase()
     },
     name: {
         type: String,
@@ -16,13 +17,13 @@ const studentSchema = new mongoose.Schema({
             totalAttendance: {
                 type: Number,
                 required: true,
-                default:0,
-                min:[0,"Attendance can't be negative"]
+                default: 0,
+                min: [0, "Attendance can't be negative"]
             },
             classId: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'Class',
-                required:true
+                required: true
             }
         }
     ]
