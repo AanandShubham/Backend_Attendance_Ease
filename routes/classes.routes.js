@@ -6,6 +6,6 @@ const router = express.Router()
 router.get("/getDetails/:id",protectRoute,getDetails)
 router.post("/add",protectRoute,addClass)
 router.post("/update",protectRoute,updateClass)
-router.post("/delete",protectRoute,deleteClass)
+router.post("/delete/:id",protectRoute,deleteClass)
 
 export default router 

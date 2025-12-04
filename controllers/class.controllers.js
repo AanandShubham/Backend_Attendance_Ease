@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 import Class from '../models/class.model.js'
-import Student from '..models/student.model.js'
+import Student from '../models/student.model.js'
 
 
 export const getDetails = async (req, res) => {
@@ -16,19 +16,22 @@ export const getDetails = async (req, res) => {
                 options: { sort: { createdAt: -1 } }
             })
 
-        // const classDetails = await Class.findById(classId)
-        //     .populate({
-        //         path: "students",
-        //         populate: ({path:"classList._id"})
-        //     })
-        //     .populate({
-        //         path: "attendance",               // populate the attendance array
-        //         populate: {
-        //             path: "students",               // populate the students inside each attendance record
-        //             model: "Student",               // model name
-        //             select: "name tca"              // optional: select fields you want
-        //         }
-        //     })
+
+        /* 
+        const classDetails = await Class.findById(classId)
+            .populate({
+                path: "students",
+                populate: ({path:"classList._id"})
+            })
+            .populate({
+                path: "attendance",               // populate the attendance array
+                populate: {
+                    path: "students",               // populate the students inside each attendance record
+                    model: "Student",               // model name
+                    select: "name tca"              // optional: select fields you want
+                }
+            })
+        */
 
 
         if (!classDetails) {
@@ -55,12 +58,15 @@ export const getDetails = async (req, res) => {
 }
 
 export const addClass = async (req, res) => {
+    const session = await mongoose.startSession()
+    session.startTransaction() // starting session for atomicity
 
     try {
 
         const { name, roomNo, totalClass, subject, timeTable } = req.body
         const user = req.user
 
+        /*
         const newClass = await Class.create(
             {
                 name,
@@ -68,22 +74,41 @@ export const addClass = async (req, res) => {
                 totalClass,
                 subject,
                 timeTable
-            })
+            }
+        )
+             
+        */
+
+        const [newClass] = await Class.create(
+            [{
+                name,
+                roomNo,
+                totalClass,
+                subject,
+                timeTable
+            }],
+            { session }
+        );
+
 
         if (!newClass) {
+            await session.abortTransaction()
             return res.status(401).json({ error: "Problem in Add Class details" })
         }
 
         await user.classes.push(newClass._id)
-        await user.save()
-
+        await user.save({ session })
+        await session.commitTransaction()
         return res.status(201).json({ newClass })
 
     } catch (error) {
+        await session.abortTransaction()
         console.log("--------------------------------------------------")
         console.log("Error in Class controller AddClass \nErron :", error)
         console.log("--------------------------------------------------")
         return res.status(500).json({ error: "Internal Server Error!!" })
+    } finally {
+        session.endSession()
     }
 }
 
@@ -123,7 +148,7 @@ export const deleteClass = async (req, res) => {
         const classId = req.params.id
         const user = req.user
 
-        const deletedClass = await Class.findByIdAndDelete(classId).session(session)
+        const deletedClass = await Class.findByIdAndDelete(classId, { session })
 
         if (!deletedClass) {
             await session.abortTransaction()
@@ -132,21 +157,22 @@ export const deleteClass = async (req, res) => {
 
         // Remove class reference from user's classes array
         user.classes = user.classes.filter(cId => cId.toString() !== classId)
-        await user.save().session(session)
+
+        await user.save({ session })
 
         const student = await Student.updateMany(
-            { classList: classId },
-            { $pull: { classList: classId } }
-        ).session(session)
+            { "classList.classId": classId },
+            { $pull: { classList: classId } },
+            { session }
+        )
 
         if (student.nModified === 0) {
             await session.abortTransaction()
             return res.status(400).json({ error: "No students were enrolled in this class" })
         }
 
-        return res.status(200).json({ message: "Class deleted successfully" })
-
-
+        await session.commitTransaction()
+        return res.status(200).json({ message: "Class Deleted Successfully" })
 
     } catch (error) {
         await session.abortTransaction()
@@ -154,7 +180,7 @@ export const deleteClass = async (req, res) => {
         console.log("Error in Class controller DeleteClass \nErron :", error)
         console.log("--------------------------------------------------")
         return res.status(500).json({ error: "Internal Server Error!!" })
-    }finally{
+    } finally {
         session.endSession()
     }
 }
