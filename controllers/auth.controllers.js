@@ -2,18 +2,26 @@ import User from "../models/user.model.js"
 import bcrypt from 'bcryptjs'
 import { generateToken } from "../utils/generateToken.js"
 import uploadToCloudinary from "../utils/uploadToCloudinary.js"
-import { error } from "console"
 
-export const signup = async (req, res) => {
+export const getUserData = async (req,res)=>{
+
+    const user = req.user
+
+    const userData = await User.findById(user._id).select("-password").populate("classes")
+
+    return res.status(200).json({user:userData})
+
+}
+
+export const signup = async (req, res) => {   // write transactin logic for this ASAP
     try {
         const { username, fullname, password, confirmPassword, securityKey } = req.body
 
         console.log("---------------------------------------------------")
-
         console.log("signup request Got : details : ", req.body)
         console.log("Path : ", req.file.path);
-
         console.log("---------------------------------------------------")
+
         if (password !== confirmPassword) {
             return res.status(400).json({ error: "password and confirm password doesnot match" })
         }
@@ -23,8 +31,6 @@ export const signup = async (req, res) => {
         if (user) {
             return res.status(409).json({ message: "User Already Available" })
         }
-
-
 
         // uploading file to cloudinary 
         const profile = await uploadToCloudinary(req.file.path)
@@ -47,11 +53,11 @@ export const signup = async (req, res) => {
             const token = generateToken(newUser._id)
             await newUser.save()
             // setting cookies for api testing 
-            res.cookie('jwt', token, {
-                maxAge: 5 * 24 * 60 * 60 * 1000,
-                httpOnly: true,
-                sameSite: "strict",
-            })
+            // res.cookie('jwt', token, {
+            //     maxAge: 5 * 24 * 60 * 60 * 1000,
+            //     httpOnly: true,
+            //     sameSite: "strict",
+            // })
             return res.status(201).json({ user: newUser, token })
         }
         else {
@@ -64,7 +70,6 @@ export const signup = async (req, res) => {
         console.log("Error in auth controller Signup \nErron :", error)
         console.log("--------------------------------------------------")
         return res.status(500).json({ error: "Internal Server Error!!" })
-
     }
 }
 
@@ -84,11 +89,11 @@ export const login = async (req, res) => {
 
         const token = generateToken(user._id)
         // setting cookies for api testing 
-        res.cookie('jwt', token, {
-            maxAge: 5 * 24 * 60 * 60 * 1000,
-            httpOnly: true,
-            sameSite: "strict",
-        })
+        // res.cookie('jwt', token, {
+        //     maxAge: 5 * 24 * 60 * 60 * 1000,
+        //     httpOnly: true,
+        //     sameSite: "strict",
+        // })
 
         return res.status(200).json({ user, token })
 
@@ -115,8 +120,6 @@ export const forgot = async (req, res) => {
             return res.status(400).json({ error: "Inavalid user name" })
         }
 
-        const isSecurityKeyMathch = user.securityKey == securityKey
-
         if (user.securityKey !== securityKey) {
             return res.status(400).json({ error: "Invalid Security Key !" })
         }
@@ -130,8 +133,6 @@ export const forgot = async (req, res) => {
 
         return res.status(200).json({message:"Password Updated Successfully" })
 
-
-
     } catch (error) {
         console.log("--------------------------------------------------")
         console.log("Error in auth controller Forget \nErron :", error)
@@ -142,9 +143,9 @@ export const forgot = async (req, res) => {
 
 export const logout = async (req, res) => {
     try {
-        res.cookie("jwt", "", {
-            maxAge: 0
-        })
+        // res.cookie("jwt", "", {
+        //     maxAge: 0
+        // })
 
         res.status(200).json({ message: "Logout Successfully !!" })
 

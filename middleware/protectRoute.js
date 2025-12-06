@@ -24,13 +24,13 @@ export const protectRoute = async (req,res,next)=>{
         const decoded = jwt.verify(token,process.env.JWT_SECRETE)
         
         if(!decoded){
-            return res.status(401).json({error:"Un-authorized , Invalid token"})
+            return res.status(401).json({error:"Un-authorized , Invalid or token expireds"})
         }
 
         const user = await User.findById(decoded.userId).select("-password")
 
         if(!user){
-            return res.status(401).json({error:"Un-authorized , User not found"})
+            return res.status(404).json({error:"Un-authorized , User not found"})
         }
 
         req.user = user 
