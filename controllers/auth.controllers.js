@@ -3,13 +3,13 @@ import bcrypt from 'bcryptjs'
 import { generateToken } from "../utils/generateToken.js"
 import uploadToCloudinary from "../utils/uploadToCloudinary.js"
 
-export const getUserData = async (req,res)=>{
+export const getUserData = async (req, res) => {
 
     const user = req.user
 
     const userData = await User.findById(user._id).select("-password").populate("classes")
 
-    return res.status(200).json({user:userData})
+    return res.status(200).json({ user: userData })
 
 }
 
@@ -131,7 +131,7 @@ export const forgot = async (req, res) => {
 
         await user.save()
 
-        return res.status(200).json({message:"Password Updated Successfully" })
+        return res.status(200).json({ message: "Password Updated Successfully" })
 
     } catch (error) {
         console.log("--------------------------------------------------")

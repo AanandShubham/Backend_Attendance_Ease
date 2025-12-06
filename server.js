@@ -20,7 +20,7 @@ app.use("/api/student",studentRoute)
 app.use("/api/attendance",attendanceRoute)
 
 app.get("/", (req, res) => {
-    res.send("Hello Developer")
+    res.send("Hello Developer i'm online now")
 })
 
 app.listen(PORT, (err) => {
