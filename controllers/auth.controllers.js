@@ -17,10 +17,10 @@ export const signup = async (req, res) => {   // write transactin logic for this
     try {
         const { username, fullname, password, confirmPassword, securityKey } = req.body
 
-        console.log("---------------------------------------------------")
-        console.log("signup request Got : details : ", req.body)
-        console.log("Path : ", req.file.path);
-        console.log("---------------------------------------------------")
+        // console.log("---------------------------------------------------")
+        // console.log("signup request Got : details : ", req.body)
+        // console.log("Path : ", req.file.path);
+        // console.log("---------------------------------------------------")
 
         if (password !== confirmPassword) {
             return res.status(400).json({ error: "password and confirm password doesnot match" })
@@ -76,8 +76,8 @@ export const signup = async (req, res) => {   // write transactin logic for this
 export const login = async (req, res) => {
     try {
         const { username, password } = req.body
-        console.log("Username : ", username)
-        console.log("Passoword : ", password)
+        // console.log("Username : ", username)
+        // console.log("Passoword : ", password)
 
         const user = await User.findOne({ username })?.populate("classes")
         // console.log("Classes : ",user["classes"])
