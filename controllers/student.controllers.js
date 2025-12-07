@@ -156,7 +156,7 @@ export const deleteStudent = async (req, res) => {
 
         await session.commitTransaction()
 
-        res.status(200).json({ message: "Student removed Successfully", classes })
+        res.status(200).json({ message: "Student removed Successfully"})
 
     } catch (error) {
         await session.abortTransaction()
