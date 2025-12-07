@@ -148,12 +148,9 @@ export const deleteClass = async (req, res) => {
         const classId = req.params.id
         const user = req.user
 
-        const deletedClass = await Class.findByIdAndDelete(classId, { session })
-
-        if (!deletedClass) {
-            await session.abortTransaction()
-            return res.status(401).json({ error: "Class id not valid" })
-        }
+        // console.log("-------------------------------------")
+        // console.log("Class Delete Controller ")
+        // console.log("-------------------------------------")
 
         // Remove class reference from user's classes array
         user.classes = user.classes.filter(cId => cId.toString() !== classId)
@@ -162,13 +159,20 @@ export const deleteClass = async (req, res) => {
 
         const student = await Student.updateMany(
             { "classList.classId": classId },
-            { $pull: { classList: classId } },
+            { $pull: { classList: { classId } } },
             { session }
         )
 
-        if (student.nModified === 0) {
+        if (student.modifiedCount === 0) {
             await session.abortTransaction()
             return res.status(400).json({ error: "No students were enrolled in this class" })
+        }
+
+        const deletedClass = await Class.findByIdAndDelete({_id:classId}, { session })
+
+        if (!deletedClass) {
+            await session.abortTransaction()
+            return res.status(401).json({ error: "Class id not valid" })
         }
 
         await session.commitTransaction()
