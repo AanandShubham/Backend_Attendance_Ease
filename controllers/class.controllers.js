@@ -163,10 +163,10 @@ export const deleteClass = async (req, res) => {
             { session }
         )
 
-        if (student.modifiedCount === 0) {
-            await session.abortTransaction()
-            return res.status(400).json({ error: "No students were enrolled in this class" })
-        }
+        // if (student.modifiedCount === 0) {
+        //     await session.abortTransaction()
+        //     return res.status(400).json({ error: "No students were enrolled in this class" })
+        // }
 
         const deletedClass = await Class.findByIdAndDelete({_id:classId}, { session })
 
