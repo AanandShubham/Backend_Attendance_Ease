@@ -9,7 +9,8 @@ export const protectRoute = async (req,res,next)=>{
 
         const authHeader = req.headers.authorization
 
-        if(authHeader && authHeader.startsWith("Token ")){
+        // if(authHeader && authHeader.startsWith("Token ")){
+        if(authHeader){
             token = authHeader.split(" ")[1]
             // console.log("-----------------------------------------")
             // console.log("Protect Route : Token Got!!!")
