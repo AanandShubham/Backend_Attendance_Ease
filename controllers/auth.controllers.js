@@ -2,6 +2,10 @@ import User from "../models/user.model.js"
 import bcrypt from 'bcryptjs'
 import { generateToken } from "../utils/generateToken.js"
 import uploadToCloudinary from "../utils/uploadToCloudinary.js"
+import Class from '../models/class.model.js'
+import mongoose from "mongoose"
+import Attendance from "../models/attendance.model.js"
+import Student from "../models/student.model.js"
 
 export const getUserData = async (req, res) => {
 
@@ -139,6 +143,99 @@ export const forgot = async (req, res) => {
         console.log("--------------------------------------------------")
         return res.status(500).json({ error: "Internal Server Error!!" })
     }
+}
+
+export const deleteUser = async (req, res) => {
+    const session = await mongoose.startSession()
+    session.startTransaction()
+
+    let user // keep reference for cloudinary cleanup
+
+    try {
+        const userId = req.user._id
+        console.log("Delete User Controller:", userId)
+
+        // Finding user
+        user = await User.findById(userId).session(session)
+        if (!user) {
+            throw new Error("USER_NOT_FOUND")
+        }
+
+        // fetching all class IDs
+        const classIds = user.classes || []
+
+        if (classIds.length > 0) {
+            const classes = await Class.find({ _id: { $in: classIds } }).session(session)
+
+            const allStudentIds = []
+            const allAttendanceIds = []
+
+            classes.forEach(cls => {
+                allStudentIds.push(...cls.students)
+                allAttendanceIds.push(...cls.attendance)
+            })
+
+            if (allAttendanceIds.length) {
+                await Attendance.deleteMany(
+                    { _id: { $in: allAttendanceIds } },
+                    { session }
+                )
+            }
+
+            if (allStudentIds.length) {
+                await Student.deleteMany(
+                    { _id: { $in: allStudentIds } },
+                    { session }
+                )
+            }
+
+            await Class.deleteMany(
+                { _id: { $in: classIds } },
+                { session }
+            )
+
+            await Student.updateMany(
+                {},
+                { $pull: { classList: { classId: { $in: classIds } } } },
+                { session }
+            )
+        }
+
+        // Deleting user
+        await User.findByIdAndDelete(user._id, { session })
+
+        //Commiting transaction DB work
+        await session.commitTransaction()
+
+    } catch (err) {
+        if (session.inTransaction()) {
+            await session.abortTransaction()
+        }
+
+        // console.error("Delete User Error:", err)
+
+        if (err.message === "USER_NOT_FOUND") {
+            return res.status(404).json({ message: "User not found" })
+        }
+
+        return res.status(500).json({ message: "Server error while deleting user" })
+    } finally {
+        session.endSession()
+    }
+
+    // cloudinary cleanup AFTER transaction
+    try {
+        if (user?.profile?.public_id) {
+            await uploadToCloudinary.uploader.destroy(user.profile.public_id)
+        }
+    } catch (cloudErr) {
+        console.error("Cloudinary cleanup failed:", cloudErr)
+        // Optional: log to monitoring service
+    }
+
+    res.status(200).json({
+        message: "User and all related data deleted successfully"
+    })
 }
 
 export const logout = async (req, res) => {
