@@ -21,10 +21,10 @@ export const signup = async (req, res) => {   // write transactin logic for this
     try {
         const { username, fullname, password, confirmPassword, securityKey } = req.body
 
-        // console.log("---------------------------------------------------")
-        // console.log("signup request Got : details : ", req.body)
-        // console.log("Path : ", req.file.path);
-        // console.log("---------------------------------------------------")
+        console.log("---------------------------------------------------")
+        console.log("signup request Got : details : ", req.body)
+        console.log("Path : ", req.file.path);
+        console.log("---------------------------------------------------")
 
         if (password !== confirmPassword) {
             return res.status(400).json({ error: "password and confirm password doesnot match" })
@@ -37,7 +37,8 @@ export const signup = async (req, res) => {   // write transactin logic for this
         }
 
         // uploading file to cloudinary 
-        const profile = await uploadToCloudinary(req.file.path)
+        // const profile = await uploadToCloudinary(req.file.path)
+        const profile = await uploadToCloudinary(req.file.buffer, "profile_pics");
 
         // generating hashed password 
         const salt = await bcrypt.genSalt(10)
