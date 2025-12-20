@@ -16,6 +16,11 @@ export const addStudent = async (req, res) => {
             return res.status(400).json({ error: "invalid class id" })
         }
 
+        if(classes.totalClass <= totalAttendance){
+            await session.abortTransaction()
+            return res.status(400).json({ error: "Student's attendance can't be more than the total class" })
+        }
+
         let student = await Student.findOne({ tca }).session(session)
 
 
