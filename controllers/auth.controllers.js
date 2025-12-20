@@ -6,6 +6,7 @@ import Class from '../models/class.model.js'
 import mongoose from "mongoose"
 import Attendance from "../models/attendance.model.js"
 import Student from "../models/student.model.js"
+import cloudinary from "../config/cloudinary.js"
 
 export const getUserData = async (req, res) => {
 
@@ -73,6 +74,69 @@ export const signup = async (req, res) => {   // write transactin logic for this
 
         console.log("--------------------------------------------------")
         console.log("Error in auth controller Signup \nErron :", error)
+        console.log("--------------------------------------------------")
+        return res.status(500).json({ error: "Internal Server Error!!" })
+    }
+}
+
+export const update = async (req, res) => {
+    try {
+        const { username, fullname, password, confirmPassword, securityKey } = req.body
+
+        console.log("---------------------------------------------------")
+        console.log("update user request Got : details : ", req.body)
+        console.log("Path Buffer : ", req.file.buffer)
+        console.log("---------------------------------------------------")
+
+        if (password !== confirmPassword) {
+            return res.status(400).json({ error: "password and confirm password doesnot match" })
+        }
+
+        const user = await User.findOne({ username, securityKey })
+
+        if (!user) {
+            return res.status(401).json({ message: "Invalid Username and SecurityKey" })
+        }
+
+        // apply updates to the found user
+        if (fullname) user.fullname = fullname
+
+        // update password if provided (password and confirmPassword already validated)
+        if (password) {
+            const salt = await bcrypt.genSalt(10)
+            user.password = await bcrypt.hash(password, salt)
+        }
+
+        // handle profile picture update if a file was provided
+        if (req.file) {
+            // upload new profile
+            const profile = await uploadToCloudinary(req.file.buffer, "profile_pics")
+
+
+            // try removing old profile from cloudinary (best-effort)
+            try {
+                if (user.profile?.public_id && cloudinary.uploader?.destroy) {
+                    await cloudinary.uploader.destroy(user.profile.public_id)
+                }
+            } catch (cloudErr) {
+                console.error("Old profile cleanup failed:", cloudErr)
+            }
+
+            user.profile = profile
+        }
+
+        // persist changes
+        await user.save()
+
+        // return updated user (without password) and a fresh token
+        const updatedUser = await User.findById(user._id).select("-password").populate("classes")
+        const token = generateToken(user._id)
+        return res.status(200).json({ user: updatedUser, token })
+
+    } catch (error) {
+
+        console.log("--------------------------------------------------")
+        console.log("Error in auth controller Update User \nErron :", error)
         console.log("--------------------------------------------------")
         return res.status(500).json({ error: "Internal Server Error!!" })
     }
