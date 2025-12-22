@@ -104,7 +104,8 @@ export const update = async (req, res) => {
         // update password if provided (password and confirmPassword already validated)
         if (password) {
             const salt = await bcrypt.genSalt(10)
-            user.password = await bcrypt.hash(password, salt)
+            const hashedPassword = await bcrypt.hash(password, salt)
+            user.password = hashedPassword
         }
 
         // handle profile picture update if a file was provided
@@ -152,7 +153,24 @@ export const login = async (req, res) => {
         // console.log("Classes : ",user["classes"])
         const isPasswordTrue = await bcrypt.compare(password, user?.password || "")
 
-        if (!user && !isPasswordTrue) {
+        // console.log("---------------------------------------")
+        // console.log("Password form req : ", password)
+        // console.log("---------------------------------------")
+        // console.log("Password form User : ", user.password)
+        // console.log("---------------------------------------")
+        // console.log("isPasswordTrue : ",isPasswordTrue)
+        // console.log("---------------------------------------")
+       
+       
+        // if (!user && !isPasswordTrue) {
+        //     return res.status(500).json({ error: "User details are invalid !!" })
+        // }
+
+        if (!user) {
+            return res.status(500).json({ error: "User details are invalid !!" })
+        }
+
+        if (!isPasswordTrue) {
             return res.status(500).json({ error: "User details are invalid !!" })
         }
 
