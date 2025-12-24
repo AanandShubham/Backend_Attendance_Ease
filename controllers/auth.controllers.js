@@ -20,12 +20,13 @@ export const getUserData = async (req, res) => {
 
 export const signup = async (req, res) => {   // write transactin logic for this ASAP
     try {
-        const { username, fullname, password, confirmPassword, securityKey } = req.body
+        const { username, fullname, password, confirmPassword, securityKey } = req.body 
+        // where is null prototypr
 
-        console.log("---------------------------------------------------")
-        console.log("signup request Got : details : ", req.body)
-        console.log("Path : ", req.file.path);
-        console.log("---------------------------------------------------")
+        // console.log("---------------------------------------------------")
+        // console.log("signup request Got : details : ", req.body)
+        // // console.log("Path : ", req.file.path)
+        // console.log("---------------------------------------------------")
 
         if (password !== confirmPassword) {
             return res.status(400).json({ error: "password and confirm password doesnot match" })
@@ -37,9 +38,16 @@ export const signup = async (req, res) => {   // write transactin logic for this
             return res.status(409).json({ message: "User Already Available" })
         }
 
+        let profile = ""
         // uploading file to cloudinary 
         // const profile = await uploadToCloudinary(req.file.path)
-        const profile = await uploadToCloudinary(req.file.buffer, "profile_pics");
+       
+        if (req?.file) {
+
+            if (req?.file?.buffer) {
+                profile = await uploadToCloudinary(req.file?.buffer, "profile_pics")
+            }
+        }
 
         // generating hashed password 
         const salt = await bcrypt.genSalt(10)
@@ -85,7 +93,7 @@ export const update = async (req, res) => {
 
         console.log("---------------------------------------------------")
         console.log("update user request Got : details : ", req.body)
-        console.log("Path Buffer : ", req.file.buffer)
+        console.log("Path Buffer : ", req?.file?.buffer)
         console.log("---------------------------------------------------")
 
         if (password !== confirmPassword) {
@@ -109,15 +117,15 @@ export const update = async (req, res) => {
         }
 
         // handle profile picture update if a file was provided
-        if (req.file) {
+        if (req?.file) {
             // upload new profile
-            const profile = await uploadToCloudinary(req.file.buffer, "profile_pics")
+            const profile = await uploadToCloudinary(req?.file?.buffer, "profile_pics")
 
 
             // try removing old profile from cloudinary (best-effort)
             try {
                 if (user.profile?.public_id && cloudinary.uploader?.destroy) {
-                    await cloudinary.uploader.destroy(user.profile.public_id)
+                    await cloudinary.uploader.destroy(user?.profile?.public_id)
                 }
             } catch (cloudErr) {
                 console.error("Old profile cleanup failed:", cloudErr)
@@ -160,8 +168,8 @@ export const login = async (req, res) => {
         // console.log("---------------------------------------")
         // console.log("isPasswordTrue : ",isPasswordTrue)
         // console.log("---------------------------------------")
-       
-       
+
+
         // if (!user && !isPasswordTrue) {
         //     return res.status(500).json({ error: "User details are invalid !!" })
         // }
